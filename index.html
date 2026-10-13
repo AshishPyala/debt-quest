@@ -133,7 +133,7 @@ body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 
 <div class="row" style="justify-content:center;margin-top:12px">
 <button class="s" onclick="syncState='';autoSync()">SYNC</button>
-<button class="s" onclick="forgetKey()">FORGET PASSCODE</button></div>
+<button class="s" onclick="lockNow()">LOCK</button></div>
 </div>
 <script>
 const K='debtQuestAP',$=id=>document.getElementById(id),f=n=>'$'+(+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -145,9 +145,11 @@ function init(){return{v:3,unlocked:false,debts:[
 {id:'kl',n:'Klarna',b:0,s:0,o:7,bnpl:1},
 {id:'af',n:'Affirm',b:0,s:0,o:8,bnpl:1},
 {id:'ap',n:'Afterpay',b:0,s:0,o:9,bnpl:1}]}}
-let S=JSON.parse(localStorage.getItem(K)||'null');
-if(!S||S.v!==3){const o=S;S=init();if(o&&o.lastSyncAsOf){S.lastSyncAsOf=null}}  // drop old manual-log state; resync from encrypted data
-const save=()=>localStorage.setItem(K,JSON.stringify(S));save();
+// Privacy: balances live in memory only; the only thing persisted is the last-seen tier number.
+const LK='dqLastLook';try{const o=JSON.parse(localStorage.getItem(K)||'null');if(o&&o.lastLook!=null&&localStorage.getItem(LK)==null)localStorage.setItem(LK,o.lastLook)}catch(e){}
+localStorage.removeItem(K);try{indexedDB.deleteDatabase('dqKeys')}catch(e){}  // migration: wipe old stored balances + key
+let S=init();{const v=localStorage.getItem(LK);if(v!=null)S.lastLook=+v}
+const save=()=>{if(S.lastLook!=null)localStorage.setItem(LK,S.lastLook)};
 const MON={ven:'🐉',qs:'👾',rh:'🦑',boa:'👹',kl:'👻',af:'🤖',ap:'🧟'};
 const TAG={ven:'VNT',qs:'QSV',rh:'RHC',boa:'BOA',kl:'KLA',af:'AFF',ap:'AFP'};
 const totS=()=>S.debts.reduce((a,d)=>a+d.s,0),totB=()=>S.debts.reduce((a,d)=>a+d.b,0);
@@ -198,9 +200,8 @@ applyTheme();setInterval(applyTheme,60000);document.addEventListener('visibility
 const MAP={klarna:'kl',affirm:'af',afterpay:'ap',robinhood_card:'rh',venture:'ven',quicksilver:'qs',bofa:'boa'};
 localStorage.removeItem('dqSyncToken');if(location.search.includes('sync='))history.replaceState(null,'',location.pathname);
 // key store: non-extractable AES-GCM CryptoKey in IndexedDB, tagged with the salt it was derived for
-const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('dqKeys',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const kGet=async()=>{const db=await idb();return new Promise(r=>{const q=db.transaction('k').objectStore('k').get('key');q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})};
-const kPut=async v=>{const db=await idb();return new Promise(r=>{const t=db.transaction('k','readwrite');v?t.objectStore('k').put(v,'key'):t.objectStore('k').delete('key');t.oncomplete=()=>r()})};
+let memKey=null;  // non-extractable CryptoKey held in memory only; gone when the app closes
+const kGet=async()=>memKey,kPut=async v=>{memKey=v||null};
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function deriveKey(pass,salt){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
  return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:b64(salt),iterations:600000},base,{name:'AES-GCM',length:256},false,['decrypt'])}
@@ -208,7 +209,8 @@ const dec=(key,e)=>crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},key,b64(e
 function askPass(err){return new Promise(res=>{$('pmErr').textContent=err||'';$('pmIn').value='';$('pm').style.display='flex';setTimeout(()=>$('pmIn').focus(),50);
  $('pmOk').onclick=()=>{const v=$('pmIn').value;if(!v)return;$('pm').style.display='none';res(v)};$('pmIn').onkeydown=e=>{if(e.key==='Enter')$('pmOk').onclick()};
  $('pmNo').onclick=()=>{$('pm').style.display='none';res(null)}})}
-async function forgetKey(){await kPut(null);S=init();save();render();showSynced();alert('Passcode forgotten on this device.')}
+function lockNow(){memKey=null;const ll=S.lastLook;S=init();S.lastLook=ll;syncState='Locked';render();showSynced()}
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>5*60*1000&&S.unlocked)lockNow()});
 let syncState='';
 function hitFx(id,a){const el=$('b_'+id);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');const dm=document.createElement('div');dm.className='dmg';dm.textContent='-'+f(a);el.appendChild(dm)}
 function showSynced(){$('synced').textContent=syncState||(S.lastSyncAsOf?'Last synced '+new Date(S.lastSyncAsOf.length<=10?S.lastSyncAsOf+'T12:00':S.lastSyncAsOf).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'')}
