@@ -32,10 +32,11 @@ h1{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:46px;tex
 .bosses{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .boss{position:relative;background:var(--card);border:1px solid rgba(224,112,58,.6);border-radius:4px;padding:12px;box-shadow:0 0 10px rgba(224,112,58,.25)}
 .boss.dead{border-color:#333;box-shadow:none;opacity:.35}
-.boss.target{border-color:var(--teal);box-shadow:0 0 16px rgba(63,214,208,.6),inset 0 0 12px rgba(63,214,208,.12)}
+.boss.target{border:2px solid #ff8a3d;box-shadow:0 0 22px rgba(255,138,61,.85),0 0 46px rgba(255,138,61,.35),inset 0 0 14px rgba(255,138,61,.18)}
+.tgt{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.16em;color:#0b0702;background:#ff8a3d;padding:1px 6px;border-radius:3px;box-shadow:0 0 8px #ff8a3d;margin-left:auto;margin-right:6px}
 .boss h3{margin:0 0 4px;font-family:'Bebas Neue',sans-serif;font-weight:400;letter-spacing:.12em;font-size:20px}
 .boss .em{float:right;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.15em;padding:3px 7px;border:1px solid currentColor;color:var(--rust);text-shadow:0 0 6px currentColor}
-.boss.target .em{color:var(--teal)}.boss.dead .em{color:var(--mut)}
+.boss.target .em{color:#ff8a3d}.boss.dead .em{color:var(--mut)}
 .meta{font-size:10px;color:var(--mut);margin-bottom:6px;letter-spacing:.04em}.hp{font-size:12px;margin:6px 0}
 .shake{animation:sh .45s}@keyframes sh{0%,100%{transform:none;filter:none}20%{transform:translateX(-5px);filter:drop-shadow(4px 0 0 var(--teal)) drop-shadow(-4px 0 0 var(--rust))}50%{transform:translateX(5px)}80%{transform:translateX(-2px);filter:hue-rotate(40deg)}}
 .dmg{position:absolute;left:50%;top:30%;color:var(--rust);font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.06em;pointer-events:none;animation:up 1s forwards;text-shadow:0 0 10px var(--rust)}
@@ -76,7 +77,7 @@ body.light .brand,body.light .stat b,body.light button,body.light .dmg{text-shad
 body.light .card{border-color:rgba(15,122,118,.45);box-shadow:0 2px 10px rgba(14,12,9,.08)}
 body.light .card::before{box-shadow:0 0 4px var(--gold)}
 body.light .boss{border-color:rgba(176,74,24,.45);box-shadow:0 2px 8px rgba(14,12,9,.07)}
-body.light .boss.target{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal),0 2px 12px rgba(15,122,118,.25)}
+body.light .boss.target{border:2px solid #e8641a;box-shadow:0 0 14px rgba(232,100,26,.6),0 0 28px rgba(232,100,26,.25)}body.light .tgt{background:#e8641a;box-shadow:0 0 6px #e8641a;color:#fff}body.light .boss.target .em{color:#e8641a}
 body.light .bar{background:rgba(14,12,9,.06);border-bottom-color:rgba(15,122,118,.25)}
 body.light .bar i{box-shadow:0 0 4px var(--rust)}body.light .bar.xp i{box-shadow:0 0 4px var(--teal)}body.light .bar.cash i{box-shadow:0 0 4px var(--gold)}
 body.light .bar i::after{background:var(--txt);box-shadow:none}
@@ -185,7 +186,7 @@ function render(){
  renderVault();renderExtras();
  const live=S.debts.filter(x=>x.b>0&&!x.bnpl).sort((a,b)=>a.o-b.o)[0];
  $('bosses').innerHTML=!S.unlocked?'<div class="card" style="grid-column:1/-1;text-align:center;padding:30px"><b>LOCKED</b><p style="color:var(--mut);font-size:12px">Enter your passcode to load your bosses.</p><button onclick="syncState=\'\';autoSync()">UNLOCK</button></div>':S.debts.slice().sort((a,b)=>a.o-b.o).map(x=>`<div class="boss ${x.b<=0?'dead':''} ${live&&live.id==x.id?'target':''}" id="b_${x.id}">
- <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><div class="bh"><span class="mon">${x.b<=0?'💥':MON[x.id]}</span><h3>${x.n}</h3></div><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
+ <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><div class="bh"><span class="mon">${x.b<=0?'💥':MON[x.id]}</span><h3>${x.n}</h3>${live&&live.id==x.id?'<span class="tgt">🎯 TARGET</span>':''}</div><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
  ${gremlin(x)}<div class="hp">HP ${f(x.b)} / ${f(x.s)}</div><div class="bar"><i style="width:${x.s?Math.max(0,x.b/x.s*100):0}%"></i></div></div>`).join('');
 }
 const cv=$('cf'),cx=cv.getContext('2d');let P=[];
