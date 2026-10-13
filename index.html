@@ -85,6 +85,10 @@ body.light button{box-shadow:none;background:rgba(15,122,118,.05)}body.light but
 body.light button.g{box-shadow:none}body.light .coins i{box-shadow:none}
 body.light .ms span.got{box-shadow:0 0 0 1px var(--gold)}body.light .log div{border-bottom-color:rgba(15,122,118,.15)}
 body.light #pm{background:rgba(242,237,230,.9)!important}body.light #over{background:rgba(242,237,230,.92)}body.light #over h2{text-shadow:0 0 6px rgba(15,122,118,.5)}
+.bh{display:flex;align-items:center;gap:10px}.mon{font-size:34px;line-height:1;filter:drop-shadow(0 0 6px var(--teal)) drop-shadow(0 0 2px var(--teal))}
+.boss.dead .mon{filter:grayscale(1) drop-shadow(0 0 6px var(--rust));opacity:.8}.boss.dead h3{opacity:.5;text-decoration:line-through}
+.rhp{margin-top:8px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.rhp b{color:var(--teal);font-weight:500}
+body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 </style></head><body>
 <canvas id="cf"></canvas>
 <button id="themeBtn" class="s" onclick="cycleTheme()">AUTO</button>
@@ -101,7 +105,7 @@ body.light #pm{background:rgba(242,237,230,.9)!important}body.light #over{backgr
 <div class="stat"><b id="tot">—</b><span>DEBT LEFT</span></div>
 <div class="stat"><b id="paid">$0</b><span>PAID OFF</span></div>
 <div class="stat"><b id="eta">—</b><span>DEBT-FREE ETA</span></div></div>
-<div class="bar" style="margin-top:10px"><i id="totbar"></i></div></div>
+<div class="bar" style="margin-top:10px"><i id="totbar"></i></div><div id="rhp" class="rhp"></div></div>
 
 <div class="bosses" id="bosses"></div>
 
@@ -122,6 +126,7 @@ function init(){return{v:3,unlocked:false,debts:[
 let S=JSON.parse(localStorage.getItem(K)||'null');
 if(!S||S.v!==3){const o=S;S=init();if(o&&o.lastSyncAsOf){S.lastSyncAsOf=null}}  // drop old manual-log state; resync from encrypted data
 const save=()=>localStorage.setItem(K,JSON.stringify(S));save();
+const MON={ven:'🐉',qs:'👾',rh:'🦑',boa:'👹',kl:'👻',af:'🤖',ap:'🧟'};
 const TAG={ven:'VNT',qs:'QSV',rh:'RHC',boa:'BOA',kl:'KLA',af:'AFF',ap:'AFP'};
 const totS=()=>S.debts.reduce((a,d)=>a+d.s,0),totB=()=>S.debts.reduce((a,d)=>a+d.b,0);
 function render(){
@@ -130,9 +135,10 @@ function render(){
  const days=Math.max(1,(Date.now()-new Date(S.startDate||Date.now()))/864e5),rate=paid>0&&days>20?paid/days*30.4:(S.etaRate||0);
  const d=new Date();d.setDate(d.getDate()+tb/rate*30.4);
  $('eta').textContent=!S.unlocked?'LOCKED':tb<=0?'FREE!':!rate?'—':d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+ $('rhp').innerHTML=S.unlocked&&S.rhPort!=null?`ROBINHOOD PORTFOLIO <b>${f(S.rhPort)}</b>${S.rhBP!=null?` · BUYING POWER <b>${f(S.rhBP)}</b>`:''}`:'';
  const live=S.debts.filter(x=>x.b>0&&!x.bnpl).sort((a,b)=>a.o-b.o)[0];
  $('bosses').innerHTML=!S.unlocked?'<div class="card" style="grid-column:1/-1;text-align:center;padding:30px"><b>LOCKED</b><p style="color:var(--mut);font-size:12px">Enter your passcode to load your bosses.</p><button onclick="syncState=\'\';autoSync()">UNLOCK</button></div>':S.debts.slice().sort((a,b)=>a.o-b.o).map(x=>`<div class="boss ${x.b<=0?'dead':''} ${live&&live.id==x.id?'target':''}" id="b_${x.id}">
- <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><h3>${x.n}</h3><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
+ <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><div class="bh"><span class="mon">${x.b<=0?'💥':MON[x.id]}</span><h3>${x.n}</h3></div><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
  <div class="hp">HP ${f(x.b)} / ${f(x.s)}</div><div class="bar"><i style="width:${x.s?Math.max(0,x.b/x.s*100):0}%"></i></div></div>`).join('');
 }
 const cv=$('cf'),cx=cv.getContext('2d');let P=[];
@@ -182,7 +188,7 @@ let syncing=false;async function autoSync(){if(syncing||!navigator.onLine)return
   for(const[k,id]of Object.entries(MAP)){if(j[k]==null)continue;const x=S.debts.find(d=>d.id==id),nb=+(+j[k]).toFixed(2),was=x.b;
    if(!first&&nb<was){const dmg=+(was-nb).toFixed(2);hits.push([id,dmg]);if(nb<=0&&was>0)kills.push(x)}
    x.b=nb;if(nb>x.s)x.s=nb}
-  S.lastSyncAsOf=j.as_of;save();render();showSynced();
+  S.rhPort=j.robinhood_portfolio??null;S.rhBP=j.robinhood_buying_power??null;S.lastSyncAsOf=j.as_of;save();render();showSynced();
   hits.forEach(([id,a])=>hitFx(id,a));if(hits.length)confetti(kills.length?250:60);
   if(kills.length){$('overtxt').textContent=kills.map(x=>(($('b_'+x.id)||{classList:{add(){}}}).classList.add('derez'),x.n.toUpperCase())).join(', ')+' DEREZZED';over.style.display='flex'}
  }catch(e){console.warn('sync failed',e)}finally{syncing=false}}
