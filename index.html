@@ -181,7 +181,7 @@ function render(){
  $('paid').textContent=S.unlocked?f(paid):'—';$('tot').textContent=S.unlocked?f(tb):'—';$('totbar').style.width=(ts?tb/ts*100:0)+'%';
  const days=Math.max(1,(Date.now()-new Date(S.startDate||Date.now()))/864e5),rate=paid>0&&days>20?paid/days*30.4:(S.etaRate||0);
  const d=new Date();d.setDate(d.getDate()+tb/rate*30.4);
- $('eta').textContent=!S.unlocked?'LOCKED':tb<=0?'FREE!':!rate?'—':d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+ const sm=S.unlocked&&tb>0?sim(0):null;$('eta').textContent=!S.unlocked?'LOCKED':tb<=0?'FREE!':sm&&sm.dt?mY(sm.dt):!rate?'—':d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
 
  renderVault();renderExtras();
  const live=S.debts.filter(x=>x.b>0&&!x.bnpl).sort((a,b)=>a.o-b.o)[0];
