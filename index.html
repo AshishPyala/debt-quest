@@ -109,6 +109,23 @@ body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 .thumbs img.locked{filter:blur(2px) brightness(.25) grayscale(1)}.thumbs img.cur{border-color:var(--gold);box-shadow:0 0 6px var(--gold)}
 .vrh{margin-top:10px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.vrh b{color:var(--teal);font-weight:500;font-size:12px}
 body.light .hero-card{box-shadow:0 0 6px var(--teal)}
+
+.grem{font-size:10px;color:var(--rust);letter-spacing:.04em;margin:2px 0}.grem.z{color:var(--mut)}.grem i,.vnext i{opacity:.6;font-size:9px}
+.whatif{margin-top:8px}.whatif label{font-size:10px;letter-spacing:.12em;color:var(--mut)}.whatif input{width:100%;accent-color:var(--teal)}
+.raid{border-color:var(--gold)!important;box-shadow:0 0 10px var(--gold)}.raidrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-size:12px}.raidrow b{color:var(--rust)}.raidrow .ok{opacity:.6;text-decoration:line-through}
+.shelf{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:8px}.tro{text-align:center;font-size:20px;filter:grayscale(1) brightness(.5);opacity:.6}.tro.on{filter:drop-shadow(0 0 4px var(--gold));opacity:1}.tro i{display:block;font-size:7px;font-style:normal;letter-spacing:.04em;color:var(--mut);line-height:1.1;margin-top:2px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);z-index:30;background:var(--bg,#080705);border:1px solid var(--gold);box-shadow:0 0 12px var(--gold);color:var(--gold);padding:10px 16px;font-size:12px;letter-spacing:.1em;border-radius:6px;opacity:0;pointer-events:none}
+#toast.show{animation:toast 3s ease}@keyframes toast{0%{opacity:0;transform:translateX(-50%) translateY(120px)}12%,80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(120px)}}
+.pet{display:flex;align-items:center;gap:8px;margin:-2px 0 6px}.pe{font-size:30px;display:inline-block}.pe.alien{filter:hue-rotate(80deg) saturate(1.6)}
+.pet.happy .pe{animation:hop .7s ease-in-out infinite}.pet.meh .pe{animation:sway 3s ease-in-out infinite}.pet.sad .pe{transform:rotate(12deg) translateY(4px);filter:grayscale(.6)}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.bub{position:relative;font-size:10px;padding:5px 8px;border:1px solid var(--teal);border-radius:8px;color:var(--fg,inherit);background:rgba(63,214,208,.08)}.bub b{color:var(--teal);font-weight:500}.bub:before{content:'';position:absolute;left:-6px;top:50%;margin-top:-4px;border:4px solid transparent;border-right-color:var(--teal);border-left:0;width:0}
+#cut{position:fixed;inset:0;z-index:25;display:none;align-items:center;justify-content:center;background:rgba(5,6,18,.92)}.cbox{width:min(420px,92vw);text-align:center}
+#cut h2{font-family:'Bebas Neue',sans-serif;font-size:46px;color:var(--teal);text-shadow:0 0 12px var(--teal);margin:4px 0;letter-spacing:.06em}#cName{color:#f2ede6;letter-spacing:.14em;margin:0 0 10px}
+#cArt{width:100%;border-radius:12px;border:2px solid var(--teal);box-shadow:0 0 14px var(--teal);margin-bottom:12px}
+.cboom{font-size:90px;height:110px;line-height:110px}.cboom.go{animation:boom 1.6s ease-out forwards}
+@keyframes boom{0%{transform:scale(1);filter:none}30%{transform:scale(1.4) rotate(-8deg);filter:brightness(2) drop-shadow(0 0 20px #f1c232)}55%{transform:scale(2.2);opacity:.9;filter:brightness(3) blur(2px)}100%{transform:scale(3);opacity:0;filter:blur(8px)}}
+#cut h2,#cName,#cArt{animation:cin .8s .9s both}@keyframes cin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style></head><body>
 <canvas id="cf"></canvas>
 <button id="themeBtn" class="s" onclick="cycleTheme()">AUTO</button>
@@ -118,16 +135,22 @@ body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 <input id="pmIn" type="password" autocomplete="current-password" placeholder="Passcode"><div id="pmErr" style="color:var(--rust);font-size:11px;min-height:16px;margin:6px 0"></div>
 <div class="row"><button class="s" id="pmNo">LATER</button><button id="pmOk">UNLOCK</button></div></div></div>
 <div id="over"><h2 data-t="DEREZZED">DEREZZED</h2><p id="overtxt" style="font-size:18px"></p><button onclick="over.style.display='none'">CONTINUE</button></div>
+<div id="cut" onclick="if(event.target===this)closeCut()"><div class="cbox"><div class="cboom" id="cEm"></div><h2 data-t="BOSS DEFEATED">BOSS DEFEATED</h2><p id="cName"></p><img id="cArt" alt=""><div class="row" style="justify-content:center"><button onclick="shareWin()">SHARE / SAVE</button><button class="s" onclick="closeCut()">CONTINUE</button></div></div></div>
+<div id="toast"></div>
 <div class="wrap">
 <span class="brand">AP'S CLUBHOUSE</span><h1>DEBT QUEST</h1><div class="sub" id="synced"></div>
 
+<div class="card raid" id="raid" style="display:none"></div>
 <div class="card"><div class="row">
 <div class="stat"><b id="tot">—</b><span>DEBT LEFT</span></div>
 <div class="stat"><b id="paid">$0</b><span>PAID OFF</span></div>
 <div class="stat"><b id="eta">—</b><span>DEBT-FREE ETA</span></div></div>
-<div class="bar" style="margin-top:10px"><i id="totbar"></i></div></div>
+<div class="bar" style="margin-top:10px"><i id="totbar"></i></div>
+<div id="extras" style="display:none"><div class="vnext" id="gremTot" style="text-align:center;margin-top:8px"></div>
+<div class="whatif"><label>WHAT IF +<b id="wiv">$0</b>/MO EXTRA</label><input type="range" id="wi" min="0" max="1500" step="50" value="0" oninput="whatIf()"><div class="vnext" id="wio"></div></div></div></div>
 
 <div class="card vault" id="vault" style="display:none"></div>
+<div class="card" id="trophies" style="display:none"></div>
 <div class="bosses" id="bosses"></div>
 
 <div class="row" style="justify-content:center;margin-top:12px">
@@ -159,11 +182,11 @@ function render(){
  const d=new Date();d.setDate(d.getDate()+tb/rate*30.4);
  $('eta').textContent=!S.unlocked?'LOCKED':tb<=0?'FREE!':!rate?'—':d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
 
- renderVault();
+ renderVault();renderExtras();
  const live=S.debts.filter(x=>x.b>0&&!x.bnpl).sort((a,b)=>a.o-b.o)[0];
  $('bosses').innerHTML=!S.unlocked?'<div class="card" style="grid-column:1/-1;text-align:center;padding:30px"><b>LOCKED</b><p style="color:var(--mut);font-size:12px">Enter your passcode to load your bosses.</p><button onclick="syncState=\'\';autoSync()">UNLOCK</button></div>':S.debts.slice().sort((a,b)=>a.o-b.o).map(x=>`<div class="boss ${x.b<=0?'dead':''} ${live&&live.id==x.id?'target':''}" id="b_${x.id}">
  <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><div class="bh"><span class="mon">${x.b<=0?'💥':MON[x.id]}</span><h3>${x.n}</h3></div><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
- <div class="hp">HP ${f(x.b)} / ${f(x.s)}</div><div class="bar"><i style="width:${x.s?Math.max(0,x.b/x.s*100):0}%"></i></div></div>`).join('');
+ ${gremlin(x)}<div class="hp">HP ${f(x.b)} / ${f(x.s)}</div><div class="bar"><i style="width:${x.s?Math.max(0,x.b/x.s*100):0}%"></i></div></div>`).join('');
 }
 const cv=$('cf'),cx=cv.getContext('2d');let P=[];
 function confetti(n){cv.width=innerWidth;cv.height=innerHeight;const C=document.body.classList.contains('light')?['#0f7a76','#8a6a2c','#b04a18','#0e0c09']:['#3fd6d0','#d4b077','#e0703a','#f2ede6'];for(let i=0;i<n;i++){const a=Math.random()*6.283,s=Math.random()*11+3;P.push({x:innerWidth/2,y:innerHeight/3,vx:Math.cos(a)*s,vy:Math.sin(a)*s,c:C[i%4],l:50+Math.random()*30})}if(P.length==n)tick()}
@@ -177,7 +200,7 @@ function renderVault(fakePct){const el=$('vault');if(!S.unlocked){el.style.displ
  const rh=S.rhPort!=null?`<div class="vrh">ROBINHOOD <b>${f(S.rhPort)}</b>${S.rhBP!=null?` · BUYING POWER <b>${f(S.rhBP)}</b>`:''}</div>`:'';
  el.style.display='';el.innerHTML=`<div class="vh"><b>THE VAULT</b></div>
  <div class="hero-card" id="heroCard"><img src="art/tier${L+1}.webp" alt="A.P. — ${lk[1]}" width="1024" height="576"></div>
- <div class="vcap">TIER ${L+1} · ${lk[1]} · ${pct.toFixed(pct<10?1:0)}% paid</div>
+ ${petHTML(L)}<div class="vcap">TIER ${L+1} · ${lk[1]} · ${pct.toFixed(pct<10?1:0)}% paid</div>
  <div class="bar vb lk"><i style="width:${lp}%"></i></div>
  <div class="vnext">${ln?`next: ${ln[1]} at ${ln[0]}% — unlocks ${ln[2]}`:'MAX TIER — debt-free!'}</div>
  <div class="thumbs">${LOOKS.map((l,i)=>`<img src="art/tier${i+1}.webp" class="${i>L?'locked':i==L?'cur':''}" alt="" title="${i>L?'LOCKED · '+l[0]+'%':l[1]}">`).join('')}</div>${rh}`;
@@ -185,6 +208,68 @@ function renderVault(fakePct){const el=$('vault');if(!S.unlocked){el.style.displ
    $('overtxt').textContent='TIER '+(L+1)+' · '+lk[1];(o=>{o.textContent='TIER UP';o.dataset.t='TIER UP'})(over.querySelector('h2'));over.style.display='flex';confetti(220);
    setTimeout(()=>{over.style.display='none';(o=>{o.textContent='DEREZZED';o.dataset.t='DEREZZED'})(over.querySelector('h2'))},2600)}
   if(S.lastLook!==L){S.lastLook=L;save()}}}
+
+// ================= FUN LAYER (no balances persisted; only ids/flags in localStorage) =================
+const ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')??d}catch(e){return d}},lsSet=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const curPct=()=>{const ts=totS(),tb=totB();return ts>0?Math.max(0,Math.min(100,(ts-tb)/ts*100)):0};
+const lookIdx=p=>LOOKS.filter(l=>p>=l[0]).length-1;
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const dOf=s=>{const[y,m,d]=s.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
+// 3) interest gremlins
+function gremlin(x){if(x.bnpl||x.b<=0)return'';
+ if(x.aprn>0)return`<div class="grem">👺 gremlin steals <b>${f(x.b*x.aprn/36500)}</b>/day <i>est.</i></div>`;
+ if(x.aprn===0&&x.promo)return`<div class="grem z">💤 gremlin sleeping until ${dOf(x.promo+'-01').toLocaleDateString('en-US',{month:'short',year:'numeric'})} <i>est.</i></div>`;return''}
+const dailyInterest=()=>S.debts.reduce((a,x)=>a+(!x.bnpl&&x.aprn>0&&x.b>0?x.b*x.aprn/36500:0),0);
+// 5) what-if (avalanche sim)
+function sim(extra){const D=S.debts.filter(x=>x.b>0).map(x=>({b:x.b,a:x.bnpl?0:(x.aprn||0),bn:x.bnpl,o:x.o,promo:x.promo})).sort((p,q)=>(p.bn-q.bn)||(q.a-p.a)||(p.o-q.o));
+ const ts=totS(),base=S.etaRate||0,pay=base+extra,tierAt={};if(!pay)return null;const now=new Date();
+ for(let m=1;m<=240;m++){const dt=new Date(now.getFullYear(),now.getMonth()+m,1);
+  D.forEach(x=>{let a=x.a;if(!a&&x.promo&&dt>dOf(x.promo+'-01'))a=28;x.b+=x.b*a/1200});let r=pay;
+  for(const x of D){const p=Math.min(r,x.b);x.b-=p;r-=p;if(r<=0)break}
+  const left=D.reduce((a,x)=>a+x.b,0),pc=ts?(ts-left)/ts*100:100;LOOKS.forEach((l,i)=>{if(pc>=l[0]&&tierAt[i]==null)tierAt[i]=dt});
+  if(left<=0.5)return{m,dt,tierAt}}return{m:999,dt:null,tierAt}}
+const mY=d=>d?d.toLocaleDateString('en-US',{month:'short',year:'numeric'}):'—';
+function whatIf(){const e=+$('wi').value;$('wiv').textContent='$'+e.toLocaleString();const a=sim(0),b=sim(e);if(!b){$('wio').textContent='';return}
+ const L=lookIdx(curPct()),nx=LOOKS[L+1];
+ $('wio').innerHTML=`→ debt-free <b>${mY(b.dt)}</b>${a&&e?` (${Math.max(0,a.m-b.m)} mo sooner)`:''}${nx?` · ${nx[1]} by <b>${mY(b.tierAt[L+1])}</b>`:''} <i>est.</i>`}
+// 2) raid
+function raidState(){const R=S.raid;if(!R||!R.items)return null;const M=Object.fromEntries(Object.entries(MAP));
+ const it=R.items.map(i=>{const x=S.debts.find(d=>d.id==M[i.boss]);const done=x&&i.baseline!=null&&(i.baseline-x.b)>=i.amount*.95;return{...i,x,done}});return{R,it,done:it.every(i=>i.done)}}
+function renderRaid(){const el=$('raid'),rs=raidState();if(!S.unlocked||!rs){el.style.display='none';return}
+ const d0=dOf(rs.R.date),t=today0(),diff=(t-d0)/864e5,dom=t.getDate();
+ const show=S.forceRaid||((diff>=0&&diff<=1)&&[2,3,16,17].includes(dom));if(!show){el.style.display='none';return}
+ el.style.display='';el.innerHTML=`<div class="vh"><b>⚔ PAYDAY RAID · ${d0.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase()}</b><span class="tier">${rs.done?'RAID CLEARED ✓':'PLANNED HITS'}</span></div>
+ <div class="raidrow">${rs.it.map(i=>`<span class="${i.done?'ok':''}">${i.x?MON[i.x.id]:''} ${i.x?i.x.n:i.boss} <b>−${f(i.amount)}</b>${i.done?' ✓':''}</span>`).join('')}</div>`}
+// 4) achievements
+const ACH=[['first','🩸','First Blood',()=>S.debts.some(x=>x.s>0&&x.b<=0)],['u10','🔟','Under $10k',()=>totB()<10000],['u5','5️⃣','Under $5k',()=>totB()<5000],
+ ['half','🌓','Halfway',()=>curPct()>=50],['nobnpl','🧊','No New BNPL 30d',()=>S.lastBnpl&&(today0()-dOf(S.lastBnpl))/864e5>=30],['raid','⚔️','Payday Warrior',()=>{const r=raidState();return r&&r.done}],
+ ['grem','🗡️','Gremlin Slayer',()=>S.debts.filter(x=>!x.bnpl&&x.s>0).every(x=>x.b<=0)],['free','🏆','Debt-Free',()=>totB()<=0&&totS()>0]];
+function renderTrophies(check){const el=$('trophies');if(!S.unlocked){el.style.display='none';return}
+ let got=ls('dqTrophies',[]);const fresh=[];if(check)ACH.forEach(([id,,n,c])=>{if(!got.includes(id)&&c()){got.push(id);fresh.push(n)}});if(fresh.length){lsSet('dqTrophies',got);fresh.forEach((n,i)=>setTimeout(()=>toast('🏆 ACHIEVEMENT: '+n),i*1800))}
+ el.style.display='';el.innerHTML=`<div class="vh"><b>TROPHIES</b><span class="tier">${got.length}/${ACH.length}</span></div><div class="shelf">${ACH.map(([id,e,n])=>`<span class="tro ${got.includes(id)?'on':''}" title="${n}">${e}<i>${n}</i></span>`).join('')}</div>`}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('show');void el.offsetWidth;el.classList.add('show')}
+// 6) pet
+const PETS=['🐀','🐀','🐶','🐶','🦙','🤖','🐲','🐲'],PETN=['RAT','RAT','ALIEN PUP','ALIEN PUP','JET LLAMA','BUTLER BOT','BABY DRAGON','BABY DRAGON'];
+function petMood(){const prev=S.debts.reduce((a,x)=>a+(x.prev!=null?x.prev:x.b),0),d=+(totB()-prev).toFixed(2);
+ const nb=S.lastBnpl&&S.lastSyncAsOf&&(dOf(S.lastSyncAsOf)-dOf(S.lastBnpl))/864e5<=7;
+ if(nb)return['sad','A new BNPL appeared… 😿'];if(d<0)return['happy',`We hit them for ${f(-d)}! ✨`];if(d>0)return['sad',`Debt crept up ${f(d)}… 😟`];return['meh','Holding the line. Next payday we strike.']}
+function petHTML(L){const[m,t]=S.fakeMood||petMood();return`<div class="pet ${m}"><span class="pe${L==2||L==3?' alien':''}">${PETS[L]}</span><span class="bub"><b>${PETN[L]}</b> · ${t}</span></div>`}
+// 1) defeat cutscene
+let cutQ=[];function checkDefeats(){const dz=ls('dqDefeated',[]);S.debts.forEach(x=>{if(x.s>0&&x.b<=0&&!dz.includes(x.id)){dz.push(x.id);cutQ.push(x)}});lsSet('dqDefeated',dz);if(cutQ.length&&$('cut').style.display!=='flex')nextCut()}
+function nextCut(){const x=cutQ.shift();if(!x)return;S.cutX=x;$('cEm').textContent=MON[x.id];$('cEm').className='cboom';void $('cEm').offsetWidth;$('cEm').className='cboom go';
+ $('cName').textContent=x.n.toUpperCase();$('cArt').src='art/tier'+(lookIdx(curPct())+1)+'.webp';$('cut').style.display='flex';confetti(300);setTimeout(()=>confetti(200),1200)}
+function closeCut(){$('cut').style.display='none';nextCut()}
+async function shareWin(){const x=S.cutX;if(!x)return;const c=document.createElement('canvas');c.width=1080;c.height=1350;const g=c.getContext('2d');
+ g.fillStyle='#0b1028';g.fillRect(0,0,1080,1350);const im=new Image();im.src=$('cArt').src;await im.decode().catch(()=>{});try{g.drawImage(im,0,0,1080,608)}catch(e){}
+ g.strokeStyle='#3fd6d0';g.lineWidth=8;g.shadowColor='#3fd6d0';g.shadowBlur=24;g.strokeRect(20,20,1040,1310);g.shadowBlur=30;
+ g.textAlign='center';g.fillStyle='#f1c232';g.font='160px serif';g.fillText('💥',540,820);g.fillStyle='#3fd6d0';g.font='120px "Bebas Neue",sans-serif';g.fillText('BOSS DEFEATED',540,990);
+ g.fillStyle='#f2ede6';g.font='72px "Bebas Neue",sans-serif';g.fillText(x.n.toUpperCase(),540,1090);g.shadowBlur=0;g.fillStyle='#9aa';g.font='40px "Bebas Neue",sans-serif';g.fillText("DEBT QUEST · AP'S CLUBHOUSE",540,1260);
+ const blob=await new Promise(r=>c.toBlob(r,'image/png')),file=new File([blob],'boss-defeated.png',{type:'image/png'});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Boss defeated: '+x.n})}catch(e){}}
+ else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='boss-defeated-'+x.id+'.png';a.click()}}
+function renderExtras(){const on=S.unlocked;$('extras').style.display=on?'':'none';if(!on){$('raid').style.display='none';$('trophies').style.display='none';return}
+ const di=dailyInterest();$('gremTot').innerHTML=di>0?`👺 interest gremlins steal <b>${f(di)}</b>/day <i>est.</i>`:'';whatIf();renderRaid();renderTrophies(false)}
+function afterSync(){let hit=0;S.debts.forEach(x=>{if(x.prev!=null&&x.prev>x.b){hit++;setTimeout(()=>hitFx(x.id,+(x.prev-x.b).toFixed(2)),300)}});if(hit)confetti(60);renderTrophies(true);checkDefeats()}
 render();
 
 // ---- Theme: Auto (light 7AM-7PM local) / Light / Dark ----
@@ -211,7 +296,7 @@ function askPass(err){return new Promise(res=>{$('pmErr').textContent=err||'';$(
 function lockNow(){memKey=null;const ll=S.lastLook;S=init();S.lastLook=ll;syncState='Locked';render();showSynced()}
 let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>5*60*1000&&S.unlocked)lockNow()});
 let syncState='';
-function hitFx(id,a){const el=$('b_'+id);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');const dm=document.createElement('div');dm.className='dmg';dm.textContent='-'+f(a);el.appendChild(dm)}
+function hitFx(id,a){const el=$('b_'+id);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');const dm=document.createElement('div');dm.className='dmg';dm.textContent='-$'+Math.round(a).toLocaleString();el.appendChild(dm)}
 function showSynced(){$('synced').textContent=syncState||(S.lastSyncAsOf?'Last synced '+new Date(S.lastSyncAsOf.length<=10?S.lastSyncAsOf+'T12:00':S.lastSyncAsOf).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'')}
 async function fetchBalances(){const r=await fetch('data/balances.enc.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)return null;const e=await r.json();
  let k=await kGet();if(k&&k.salt===e.salt){try{return await dec(k.key,e)}catch(x){await kPut(null)}}
@@ -224,14 +309,14 @@ let syncing=false;async function autoSync(){if(syncing||!navigator.onLine)return
   if(!j.as_of||(S.unlocked&&S.lastSyncAsOf&&j.as_of<=S.lastSyncAsOf)){showSynced();return}
   const first=!S.lastSyncAsOf||!S.unlocked,hits=[],kills=[];
   const st=j.start||{},mt=j.meta||{};if(j.start_date)S.startDate=j.start_date;if(j.eta_rate)S.etaRate=j.eta_rate;
-  for(const[k,id]of Object.entries(MAP)){const x=S.debts.find(d=>d.id==id);if(st[k]!=null)x.s=+st[k];if(mt[k]){x.apr=mt[k].apr||''}}
+  for(const[k,id]of Object.entries(MAP)){const x=S.debts.find(d=>d.id==id);if(st[k]!=null)x.s=+st[k];if(mt[k]){x.apr=mt[k].apr||''}x.aprn=(j.apr_num||{})[k]??null;x.promo=(j.promo_end||{})[k]||null;x.prev=(j.previous||{})[k]??null}
+  S.raid=j.raid_plan||null;S.lastBnpl=j.last_new_bnpl_date||null;S.prevAsOf=(j.previous||{}).as_of||null;
   S.unlocked=true;
   for(const[k,id]of Object.entries(MAP)){if(j[k]==null)continue;const x=S.debts.find(d=>d.id==id),nb=+(+j[k]).toFixed(2),was=x.b;
    if(!first&&nb<was){const dmg=+(was-nb).toFixed(2);hits.push([id,dmg]);if(nb<=0&&was>0)kills.push(x)}
    x.b=nb;if(nb>x.s)x.s=nb}
   S.rhPort=j.robinhood_portfolio??null;S.rhBP=j.robinhood_buying_power??null;S.lastSyncAsOf=j.as_of;save();render();showSynced();
-  hits.forEach(([id,a])=>hitFx(id,a));if(hits.length)confetti(kills.length?250:60);
-  if(kills.length){$('overtxt').textContent=kills.map(x=>(($('b_'+x.id)||{classList:{add(){}}}).classList.add('derez'),x.n.toUpperCase())).join(', ')+' DEREZZED';over.style.display='flex'}
+  afterSync();
  }catch(e){console.warn('sync failed',e)}finally{syncing=false}}
 showSynced();autoSync();addEventListener('online',autoSync);document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoSync()});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js'));
