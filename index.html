@@ -100,6 +100,15 @@ body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 @keyframes spk{0%,70%,100%{opacity:0}80%{opacity:1}}.spk{animation:spk 1.8s steps(1) infinite}.spk.d2{animation-delay:.6s}.spk.d3{animation-delay:1.2s}
 @keyframes aura{0%,100%{opacity:.25}50%{opacity:.55}}.aura{animation:aura 2s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.hero,.spk,.aura{animation:none}}
+
+.hero-card{margin:10px 0 8px;border:2px solid var(--teal);border-radius:14px;overflow:hidden;box-shadow:0 0 10px var(--teal),inset 0 0 10px rgba(63,214,208,.3);line-height:0}
+.hero-card img{width:100%;height:auto;display:block}
+.hero-card.flash{animation:tierflash 2.2s ease-out}@keyframes tierflash{0%{box-shadow:0 0 0 var(--gold);filter:brightness(2.2)}25%{box-shadow:0 0 40px var(--gold),0 0 80px var(--gold);filter:brightness(1.4)}100%{box-shadow:0 0 10px var(--teal);filter:none}}
+.vcap{font-size:11px;letter-spacing:.14em;color:var(--gold);text-align:center;margin-bottom:4px}
+.thumbs{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;border:1px solid rgba(63,214,208,.35)}
+.thumbs img.locked{filter:blur(2px) brightness(.25) grayscale(1)}.thumbs img.cur{border-color:var(--gold);box-shadow:0 0 6px var(--gold)}
+.vrh{margin-top:10px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.vrh b{color:var(--teal);font-weight:500;font-size:12px}
+body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 </style></head><body>
 <canvas id="cf"></canvas>
 <button id="themeBtn" class="s" onclick="cycleTheme()">AUTO</button>
@@ -159,58 +168,22 @@ const cv=$('cf'),cx=cv.getContext('2d');let P=[];
 function confetti(n){cv.width=innerWidth;cv.height=innerHeight;const C=document.body.classList.contains('light')?['#0f7a76','#8a6a2c','#b04a18','#0e0c09']:['#3fd6d0','#d4b077','#e0703a','#f2ede6'];for(let i=0;i<n;i++){const a=Math.random()*6.283,s=Math.random()*11+3;P.push({x:innerWidth/2,y:innerHeight/3,vx:Math.cos(a)*s,vy:Math.sin(a)*s,c:C[i%4],l:50+Math.random()*30})}if(P.length==n)tick()}
 function tick(){cx.globalCompositeOperation='source-over';cx.fillStyle='rgba(0,0,0,0)';cx.clearRect(0,0,cv.width,cv.height);cx.lineCap='round';P.forEach(p=>{const ox=p.x,oy=p.y;p.x+=p.vx;p.y+=p.vy;p.vx*=.95;p.vy=p.vy*.95+.12;p.l--;cx.strokeStyle=p.c;cx.shadowColor=p.c;cx.shadowBlur=12;cx.globalAlpha=Math.min(1,p.l/30);cx.lineWidth=2;cx.beginPath();cx.moveTo(ox-p.vx*2,oy-p.vy*2);cx.lineTo(p.x,p.y);cx.stroke()});cx.globalAlpha=1;P=P.filter(p=>p.l>0);if(P.length)requestAnimationFrame(tick);else cx.clearRect(0,0,cv.width,cv.height)}
 
-// ---- The Vault: character look = % of debt paid; scene treasure = Robinhood portfolio ----
-const TIERS=[[0,'POCKET CHANGE','a few coins'],[1000,'COIN HOARDER','coin pile'],[2500,'STACKED','coin tower'],[5000,'GEM CACHE','gems'],[10000,'TREASURE KEEPER','treasure chests'],[25000,'THRONE ROOM','throne'],[50000,'CASTLE HALL','full castle hall']];
-const LOOKS=[[0,'RAGGED'],[10,'SCRAPPER'],[25,'HUSTLER'],[40,'SHARP'],[55,'KNIGHT'],[70,'CHAMPION'],[85,'ROYAL'],[100,'DEBT-FREE LEGEND']];
-function px(x,y,c,w=1,h=1,cls=''){return`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"${cls?` class="${cls}"`:''}/>`}
-function spr(rows,ox,oy,pal){let o='';rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])o+=px(ox+x,oy+y,pal[ch])}));return o}
-function hero(L,X,Y,glowSword){ // L = look tier 0..7
- const neat=['..hhhh..','.hhhhhh.'],messy=['h.hh.h.h','hhhhhhhh'];
- const face=L==0?['.hssssh.','.sesses.','.suss us.'.replace(' ',''),'..sffs..']:['.hssssh.','.sesses.','.ssssss.','..smms..'];
- const T=[['.cccacc.','scscccss','sccccacs','.c.cc.c.'],['.cccccc.','sccacccs','scccccas','.cccccc.'],['.cccccc.','sccccccs','sccccccs','.cccccc.'],['.jjccjj.','sjjccjjs','sjjccjjs','.bbbbbb.'],
-  ['.aaaaaa.','saawwaas','saaaaaas','.bbbbbb.'],['.aaaaaa.','saawwaas','saaaaaas','.bbbbbb.'],['.yppppy.','spppppps','spyyyyps','.pppppp.'],['.aaaaaa.','saawwaas','saaaaaas','.bbbbbb.']][L];
- const legs=L==0?['.pp..pp.','.ss..ss.']:L==1?['.pp..pp.','.pp..pp.']:['.pp..pp.','.pp..pp.'];
- const feet=['.ss..ss.','.ts..ts.','.ww..ww.','.kk..kk.','.kk..kk.','.kk..kk.','.kk..kk.','.kk..kk.'][L];
- const C=[{c:'#8a7a5a',a:'#5d6b4a',p:'#6b5a40'},{c:'#7a6a8f',a:'#b08a4a',p:'#5a5a6a'},{c:'#e8e8e8',p:'#2f4f8f'},{c:'#e8e8e8',j:'#2c3e50',b:'#7b4a1e',p:'#3a3a48'},
-  {a:'#9aa4b0',w:'#e0e6ee',b:'#5a4a3a',p:'#7a8490'},{a:'#9aa4b0',w:'#e0e6ee',b:'#b3262e',p:'#7a8490'},{p:'#5b2a86',y:'#f1c232'},{a:'#f1c232',w:'#fff6c4',b:'#b8860b',p:'#d4a017'}][L];
- const pal=Object.assign({h:L==0?'#4a3424':'#3b2414',s:'#c68a5a',e:'#111',m:'#7a3b2a',f:'#5a3424',u:'#8a5a3a',t:'#7b4a1e',w:'#f4f4f4',k:'#222',y:'#f1c232'},C);
- let o='';
- if(L==5)o+=px(X,Y+6,'#b3262e',8,7)+px(X-1,Y+8,'#b3262e',10,5);
- if(L>=6)o+=px(X-1,Y+6,'#5b2a86',10,7)+px(X-1,Y+12,'#f1c232',10,1);
- o+=spr([...(L==0?messy:neat),...face,...T,...legs,feet],X,Y,pal);
- if(L==0)o+=px(X+2,Y+7,'#5d6b4a',2,2)+px(X+5,Y+9,'#4a3a2a');
- if(L>=6)o+=spr(['y.y..y.y','yyyyyyyy','yryyyyby'],X,Y-3,{y:'#f1c232',r:'#e0473a',b:'#3fd6d0'});
- if(L==4)o+=spr(['.w','wg','wg','wg','wg','yy','.k','.k'],X+8,Y+1,{w:'#e0e6ee',g:'#9aa4b0',y:'#8a8a8a',k:'#5a3a1a'});
- if(L==5||L>=7)o+=`<g style="filter:drop-shadow(0 0 1.5px #3fd6d0)">`+spr(['.w','wc','wc','wc','wc','wc','yy','.g','.g'],X+8,Y-1,{w:'#e8ffff',c:'#3fd6d0',y:'#f1c232',g:'#7b4a1e'})+'</g>';
- return o}
-function vaultSVG(v,pct){
- const t=TIERS.filter(t=>v>=t[0]).length-1,L=LOOKS.filter(l=>pct>=l[0]).length-1,light=document.body.classList.contains('light');
- const W=64,H=36,G=29;let o='';
- o+=px(0,0,light?'#cfe9ee':'#0b0f1a',W,H);
- if(t>=6){o+=px(0,0,light?'#b9c6d6':'#1a1630',W,G);for(let x=2;x<W;x+=12){o+=px(x,4,light?'#8f9bb0':'#2c2650',4,G-4)+px(x-1,3,light?'#7a869c':'#3a3366',6,2)}
-  [[8,5],[32,5],[56,5]].forEach(([x,y])=>{o+=px(x,y,'#b3262e',4,7)+px(x+1,y+7,'#b3262e',2,1)+px(x+1,y+2,'#f1c232',2,2)});o+=px(26,G-1,'#b3262e',14,1);
- }else{for(let i=0;i<14;i++)o+=px((i*23+7)%W,(i*11+3)%(G-8),light?'#ffffff':'#3fd6d0')}
- o+=px(0,G,light?'#7b5b3a':'#141a2e',W,H-G);for(let x=0;x<W;x+=4)o+=px(x,G,light?'#5f4429':'#3fd6d0',2,1);
- if(L>=7){o+=`<ellipse class="aura" cx="33" cy="20" rx="11" ry="12" fill="#f1c232"/>`;
-  [[10,6,'#e0473a',''],[52,5,'#3fd6d0','d2'],[22,3,'#f1c232','d3'],[44,9,'#b05cff','']].forEach(([x,y,c,d])=>o+=`<g class="spk ${d}">${px(x,y-2,c)+px(x,y+2,c)+px(x-2,y,c)+px(x+2,y,c)+px(x-1,y-1,c)+px(x+1,y+1,c)+px(x+1,y-1,c)+px(x-1,y+1,c)}</g>`)}
- if(t>=5)o+=spr(['..y.yy.y..','.pppppppp.','.pppppppp.','.pppppppp.','.pyppppyp.','.pppppppp.','.pppppppp.','.pppppppp.','.pppppppp.','.pppppppp.','pppppppppppp','prrrrrrrrrrp','prrrrrrrrrrp','p.p....p.p','p.p....p.p'],27,G-15,{p:'#5b2a86',y:'#f1c232',r:'#b3262e'});
- const coin='#f1c232',cd='#b8860b';
- if(t>=1){[[4,6],[3,4],[4,2],[3,0]].forEach(([w,r],i)=>{for(let k=0;k<w;k++)o+=px(5+i+k*2,G-1-r/2,k%2?cd:coin,2,1)})}
- else{[[8,G-1],[12,G-1],[44,G-1]].forEach(([x,y])=>o+=px(x,y,coin,2,1)+px(x,y-1,cd,2,1))}
- if(t>=2)for(let i=0;i<7;i++)o+=px(19,G-1-i,i%2?cd:coin,3,1);
- if(t>=3)[[14,G-2,'#e0473a'],[23,G-2,'#3fd6d0'],[42,G-2,'#5fd35f'],[25,G-2,'#b05cff']].forEach(([x,y,c])=>o+=px(x,y,c,2,2)+px(x,y,'#fff'));
- if(t>=4){const ch=x=>spr(['.bbbbbb.','bbyyyybb','bbbbbbbb','yyyyyyyy','bbbbbbbb','bbbyybbb','bbbbbbbb'],x,G-7,{b:'#7b4a1e',y:'#f1c232'});o+=ch(46)+ch(55)+px(48,G-8,'#e0473a',2,1)+px(57,G-8,'#3fd6d0',2,1)}
- o+=`<g class="hero">${hero(L,30,G-13)}</g>`;
- [[9,G-4,''],[44,G-3,'d2'],[20,G-9,'d3'],[52,G-10,'d2']].slice(0,t>=4?4:t>=1?3:2).forEach(([x,y,d])=>o+=px(x,y,'#fff',1,1,'spk '+d));
- return{svg:`<svg class="scene" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pixel A.P. in the vault">${o}</svg>`,t,L}}
-function renderVault(fakePct){const el=$('vault');if(!S.unlocked||S.rhPort==null){el.style.display='none';return}
+// ---- The Vault: A.P.'s look = % of total debt paid (cartoon tier art) ----
+const LOOKS=[[0,'STRANDED',''],[10,'SCRAPPER','scrap hoverboard + bow-tie rat'],[25,'HUSTLER','camera, space scooter, alien pup'],[40,'SHARP','blazer + rocket car'],[55,'SPACE KNIGHT','armor + jet llama'],[70,'CAPTAIN','starship + robot butler'],[85,'MOON ROYALTY','moon throne + baby dragon'],[100,'DEBT-FREE LEGEND','your own planet + mothership']];
+function renderVault(fakePct){const el=$('vault');if(!S.unlocked){el.style.display='none';return}
  const ts=totS(),tb=totB(),pct=fakePct!=null?fakePct:(ts>0?Math.max(0,Math.min(100,(ts-tb)/ts*100)):0);
- const v=+S.rhPort,{svg,t,L}=vaultSVG(v,pct),cur=TIERS[t],nx=TIERS[t+1],lk=LOOKS[L],ln=LOOKS[L+1];
- const vp=nx?Math.min(100,(v-cur[0])/(nx[0]-cur[0])*100):100,lp=ln?Math.min(100,(pct-lk[0])/(ln[0]-lk[0])*100):100;
- el.style.display='';el.innerHTML=`<div class="vh"><b>THE VAULT</b><span class="tier">LOOK · ${lk[1]}</span></div>${svg}
- <div class="vnext"><b style="color:var(--teal)">LOOK: ${lk[1]}</b> · ${pct.toFixed(pct<10?1:0)}% paid · ${ln?`next: ${ln[1]} at ${ln[0]}%`:'MAX — debt-free!'}</div><div class="bar vb lk"><i style="width:${lp}%"></i></div>
- <div class="vs" style="margin-top:10px"><div><b>${f(v)}</b><span>ROBINHOOD PORTFOLIO</span></div>${S.rhBP!=null?`<div><b>${f(S.rhBP)}</b><span>BUYING POWER</span></div>`:''}</div>
- <div class="vnext"><b style="color:var(--gold)">SCENE: ${cur[1]}</b> · ${nx?`${f(nx[0]-v)} to ${nx[1]} — unlocks ${nx[2]}`:'MAX — the whole castle is yours'}</div><div class="bar vb"><i style="width:${vp}%"></i></div>`}
+ const L=LOOKS.filter(l=>pct>=l[0]).length-1,lk=LOOKS[L],ln=LOOKS[L+1],lp=ln?Math.min(100,(pct-lk[0])/(ln[0]-lk[0])*100):100;
+ const rh=S.rhPort!=null?`<div class="vrh">ROBINHOOD <b>${f(S.rhPort)}</b>${S.rhBP!=null?` · BUYING POWER <b>${f(S.rhBP)}</b>`:''}</div>`:'';
+ el.style.display='';el.innerHTML=`<div class="vh"><b>THE VAULT</b></div>
+ <div class="hero-card" id="heroCard"><img src="art/tier${L+1}.webp" alt="A.P. — ${lk[1]}" width="1024" height="576"></div>
+ <div class="vcap">TIER ${L+1} · ${lk[1]} · ${pct.toFixed(pct<10?1:0)}% paid</div>
+ <div class="bar vb lk"><i style="width:${lp}%"></i></div>
+ <div class="vnext">${ln?`next: ${ln[1]} at ${ln[0]}% — unlocks ${ln[2]}`:'MAX TIER — debt-free!'}</div>
+ <div class="thumbs">${LOOKS.map((l,i)=>`<img src="art/tier${i+1}.webp" class="${i>L?'locked':i==L?'cur':''}" alt="" title="${i>L?'LOCKED · '+l[0]+'%':l[1]}">`).join('')}</div>${rh}`;
+ if(fakePct==null){if(S.lastLook!=null&&L>S.lastLook){const h=$('heroCard');h.classList.add('flash');setTimeout(()=>h.classList.remove('flash'),2200);
+   $('overtxt').textContent='TIER '+(L+1)+' · '+lk[1];(o=>{o.textContent='TIER UP';o.dataset.t='TIER UP'})(over.querySelector('h2'));over.style.display='flex';confetti(220);
+   setTimeout(()=>{over.style.display='none';(o=>{o.textContent='DEREZZED';o.dataset.t='DEREZZED'})(over.querySelector('h2'))},2600)}
+  if(S.lastLook!==L){S.lastLook=L;save()}}}
 render();
 
 // ---- Theme: Auto (light 7AM-7PM local) / Light / Dark ----
