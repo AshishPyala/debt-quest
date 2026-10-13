@@ -89,6 +89,17 @@ body.light #pm{background:rgba(242,237,230,.9)!important}body.light #over{backgr
 .boss.dead .mon{filter:grayscale(1) drop-shadow(0 0 6px var(--rust));opacity:.8}.boss.dead h3{opacity:.5;text-decoration:line-through}
 .rhp{margin-top:8px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.rhp b{color:var(--teal);font-weight:500;font-size:12px}.rhp span{white-space:nowrap}
 body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
+
+.vault{margin-top:12px}.vault .vh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.vault .tier{color:var(--gold);font-size:11px;letter-spacing:.14em}
+.scene{display:block;width:100%;max-width:480px;margin:10px auto;image-rendering:pixelated;shape-rendering:crispEdges;border:2px solid var(--teal);box-shadow:0 0 8px var(--teal),inset 0 0 8px rgba(63,214,208,.35);border-radius:4px}
+.vs{display:flex;justify-content:space-around;text-align:center;margin:4px 0 8px}.vs b{color:var(--teal);font-size:16px}.vs span{display:block;font-size:9px;letter-spacing:.14em;color:var(--mut)}
+.vnext{font-size:10px;color:var(--mut);margin-top:4px;letter-spacing:.06em}
+.bar.vb i{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}.hero{animation:bob 1.2s steps(1) infinite}
+@keyframes spk{0%,70%,100%{opacity:0}80%{opacity:1}}.spk{animation:spk 1.8s steps(1) infinite}.spk.d2{animation-delay:.6s}.spk.d3{animation-delay:1.2s}
+@keyframes aura{0%,100%{opacity:.25}50%{opacity:.55}}.aura{animation:aura 2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.hero,.spk,.aura{animation:none}}
 </style></head><body>
 <canvas id="cf"></canvas>
 <button id="themeBtn" class="s" onclick="cycleTheme()">AUTO</button>
@@ -105,9 +116,11 @@ body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 <div class="stat"><b id="tot">—</b><span>DEBT LEFT</span></div>
 <div class="stat"><b id="paid">$0</b><span>PAID OFF</span></div>
 <div class="stat"><b id="eta">—</b><span>DEBT-FREE ETA</span></div></div>
-<div class="bar" style="margin-top:10px"><i id="totbar"></i></div><div id="rhp" class="rhp"></div></div>
+<div class="bar" style="margin-top:10px"><i id="totbar"></i></div></div>
 
 <div class="bosses" id="bosses"></div>
+
+<div class="card vault" id="vault" style="display:none"></div>
 
 <div class="row" style="justify-content:center;margin-top:12px">
 <button class="s" onclick="syncState='';autoSync()">SYNC</button>
@@ -135,7 +148,8 @@ function render(){
  const days=Math.max(1,(Date.now()-new Date(S.startDate||Date.now()))/864e5),rate=paid>0&&days>20?paid/days*30.4:(S.etaRate||0);
  const d=new Date();d.setDate(d.getDate()+tb/rate*30.4);
  $('eta').textContent=!S.unlocked?'LOCKED':tb<=0?'FREE!':!rate?'—':d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
- $('rhp').innerHTML=S.unlocked&&S.rhPort!=null?`<span>ROBINHOOD PORTFOLIO <b>${f(S.rhPort)}</b></span>${S.rhBP!=null?` · <span>BUYING POWER <b>${f(S.rhBP)}</b></span>`:''}`:'';
+
+ renderVault();
  const live=S.debts.filter(x=>x.b>0&&!x.bnpl).sort((a,b)=>a.o-b.o)[0];
  $('bosses').innerHTML=!S.unlocked?'<div class="card" style="grid-column:1/-1;text-align:center;padding:30px"><b>LOCKED</b><p style="color:var(--mut);font-size:12px">Enter your passcode to load your bosses.</p><button onclick="syncState=\'\';autoSync()">UNLOCK</button></div>':S.debts.slice().sort((a,b)=>a.o-b.o).map(x=>`<div class="boss ${x.b<=0?'dead':''} ${live&&live.id==x.id?'target':''}" id="b_${x.id}">
  <span class="em">${x.b<=0?'OFFLINE':TAG[x.id]}</span><div class="bh"><span class="mon">${x.b<=0?'💥':MON[x.id]}</span><h3>${x.n}</h3></div><div class="meta">${x.apr?'APR '+x.apr:''}${x.bnpl?(x.apr?' · ':'')+'on schedule':''}&nbsp;</div>
@@ -144,13 +158,48 @@ function render(){
 const cv=$('cf'),cx=cv.getContext('2d');let P=[];
 function confetti(n){cv.width=innerWidth;cv.height=innerHeight;const C=document.body.classList.contains('light')?['#0f7a76','#8a6a2c','#b04a18','#0e0c09']:['#3fd6d0','#d4b077','#e0703a','#f2ede6'];for(let i=0;i<n;i++){const a=Math.random()*6.283,s=Math.random()*11+3;P.push({x:innerWidth/2,y:innerHeight/3,vx:Math.cos(a)*s,vy:Math.sin(a)*s,c:C[i%4],l:50+Math.random()*30})}if(P.length==n)tick()}
 function tick(){cx.globalCompositeOperation='source-over';cx.fillStyle='rgba(0,0,0,0)';cx.clearRect(0,0,cv.width,cv.height);cx.lineCap='round';P.forEach(p=>{const ox=p.x,oy=p.y;p.x+=p.vx;p.y+=p.vy;p.vx*=.95;p.vy=p.vy*.95+.12;p.l--;cx.strokeStyle=p.c;cx.shadowColor=p.c;cx.shadowBlur=12;cx.globalAlpha=Math.min(1,p.l/30);cx.lineWidth=2;cx.beginPath();cx.moveTo(ox-p.vx*2,oy-p.vy*2);cx.lineTo(p.x,p.y);cx.stroke()});cx.globalAlpha=1;P=P.filter(p=>p.l>0);if(P.length)requestAnimationFrame(tick);else cx.clearRect(0,0,cv.width,cv.height)}
+
+// ---- The Vault: pixel-art avatar scene driven by encrypted robinhood_portfolio ----
+const TIERS=[[0,'POCKET CHANGE','a few coins'],[1000,'COIN HOARDER','coin pile'],[2500,'CROWNED','gold crown'],[5000,'BLADE BEARER','glowing sword'],[10000,'TREASURE KEEPER','chests + gems'],[25000,'THRONE HOLDER','throne'],[50000,'CASTLE LORD','castle hall + gold aura']];
+function px(x,y,c,w=1,h=1,cls=''){return`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"${cls?` class="${cls}"`:''}/>`}
+function spr(rows,ox,oy,pal){let o='';rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])o+=px(ox+x,oy+y,pal[ch])}));return o}
+function vaultSVG(v){
+ const t=TIERS.filter(t=>v>=t[0]).length-1,light=document.body.classList.contains('light');
+ const W=64,H=36,G=29;let o='';
+ o+=px(0,0,light?'#cfe9ee':'#0b0f1a',W,H);
+ if(t>=6){ // castle hall
+  o+=px(0,0,light?'#b9c6d6':'#1a1630',W,G);for(let x=2;x<W;x+=12){o+=px(x,4,light?'#8f9bb0':'#2c2650',4,G-4)+px(x-1,3,light?'#7a869c':'#3a3366',6,2)}
+  [[8,5],[32,5],[56,5]].forEach(([x,y])=>{o+=px(x,y,'#b3262e',4,7)+px(x+1,y+7,'#b3262e',2,1)+px(x+1,y+2,'#f1c232',2,2)});
+  o+=px(26,G-1,'#b3262e',14,1);
+ }else{for(let i=0;i<14;i++)o+=px((i*23+7)%W,(i*11+3)%(G-8),light?'#ffffff':'#3fd6d0')}
+ o+=px(0,G,light?'#7b5b3a':'#141a2e',W,H-G);for(let x=0;x<W;x+=4)o+=px(x,G,light?'#5f4429':'#3fd6d0',2,1);
+ if(t>=6)o+=`<ellipse class="aura" cx="33" cy="20" rx="11" ry="12" fill="#f1c232"/>`;
+ if(t>=5)o+=spr(['..y.yy.y..','.pppppppp.','.pppppppp.','.pppppppp.','.pyppppyp.','.pppppppp.','.pppppppp.','.pppppppp.','.pppppppp.','.pppppppp.','pppppppppppp','prrrrrrrrrrp','prrrrrrrrp','p.p....p.p','p.p....p.p'],27,G-16,{p:'#5b2a86',y:'#f1c232',r:'#b3262e'});
+ const coin='#f1c232',cd='#b8860b';
+ if(t>=1){[[4,6],[3,4],[4,2],[3,0]].forEach(([w,r],i)=>{for(let k=0;k<w;k++)o+=px(5+i+k*2,G-1-r/2,k%2?cd:coin,2,1)})}
+ else{[[8,G-1],[12,G-1],[44,G-1]].forEach(([x,y])=>o+=px(x,y,coin,2,1)+px(x,y-1,cd,2,1))}
+ if(t>=4){const ch=(x)=>spr(['.bbbbbb.','bbyyyybb','bbbbbbbb','yyyyyyyy','bbbbbbbb','bbbyybbb','bbbbbbbb'],x,G-7,{b:'#7b4a1e',y:'#f1c232'});o+=ch(46)+ch(55);
+  [[47,G-9,'#e0473a'],[50,G-8,'#3fd6d0'],[56,G-9,'#5fd35f'],[59,G-8,'#b05cff']].forEach(([x,y,c])=>o+=px(x,y,c,2,2)+px(x,y,'#fff'));}
+ const shirt=t>=2?'#1f9d55':'#6b7a8f',pants=t>=2?'#2b2b6b':'#4a4f5c';
+ let hero=spr(['..hhhh..','.hhhhhh.','.hssssh.','.sesses.','.ssssss.','..smms..','.cccccc.','sccccccs','sccbbccs','.cccccc.','.pp..pp.','.pp..pp.','.kk..kk.'],30,G-13,{h:'#3b2414',s:'#c68a5a',e:'#111',m:'#7a3b2a',c:shirt,b:t>=2?'#f1c232':shirt,p:pants,k:'#222'});
+ if(t>=2)hero+=spr(['y.y..y.y','yyyyyyyy','yryyyyby'],30,G-16,{y:'#f1c232',r:'#e0473a',b:'#3fd6d0'});
+ if(t>=3)hero+=`<g style="filter:drop-shadow(0 0 1.5px #3fd6d0)">`+spr(['.w','wc','wc','wc','wc','wc','yy','.g','.g'],38,G-14,{w:'#e8ffff',c:'#3fd6d0',y:'#f1c232',g:'#7b4a1e'})+'</g>';
+ o+=`<g class="hero">${hero}</g>`;
+ [[9,G-4,''],[44,G-3,'d2'],[20,G-2,'d3'],[52,G-10,'d2']].slice(0,t>=4?4:t>=1?3:2).forEach(([x,y,d])=>o+=px(x,y,'#fff',1,1,'spk '+d));
+ return{svg:`<svg class="scene" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pixel A.P. in the vault">${o}</svg>`,t}}
+function renderVault(){const el=$('vault');if(!S.unlocked||S.rhPort==null){el.style.display='none';return}
+ const v=+S.rhPort,{svg,t}=vaultSVG(v),cur=TIERS[t],nx=TIERS[t+1];
+ const pct=nx?Math.min(100,(v-cur[0])/(nx[0]-cur[0])*100):100;
+ el.style.display='';el.innerHTML=`<div class="vh"><b>THE VAULT</b><span class="tier">TIER ${t+1} · ${cur[1]}</span></div>${svg}
+ <div class="vs"><div><b>${f(v)}</b><span>ROBINHOOD PORTFOLIO</span></div>${S.rhBP!=null?`<div><b>${f(S.rhBP)}</b><span>BUYING POWER</span></div>`:''}</div>
+ <div class="bar vb"><i style="width:${pct}%"></i></div><div class="vnext">${nx?`${f(nx[0]-v)} to ${nx[1]} — unlocks ${nx[2]}`:'MAX TIER — the whole castle is yours'}</div>`}
 render();
 
 // ---- Theme: Auto (light 7AM-7PM local) / Light / Dark ----
 const TK='dqTheme';
 function applyTheme(){const m=localStorage.getItem(TK)||'auto',hr=new Date().getHours(),light=m==='light'||(m==='auto'&&hr>=7&&hr<19);
  document.body.classList.toggle('light',light);document.querySelector('meta[name=theme-color]').setAttribute('content',light?'#f2ede6':'#080705');
- $('themeBtn').textContent=(m==='auto'?'AUTO':m==='light'?'LIGHT':'DARK')+(m==='auto'?(light?' ☀':' ☾'):'');}
+ if(typeof renderVault==='function')renderVault();$('themeBtn').textContent=(m==='auto'?'AUTO':m==='light'?'LIGHT':'DARK')+(m==='auto'?(light?' ☀':' ☾'):'');}
 function cycleTheme(){const o=['auto','light','dark'],m=localStorage.getItem(TK)||'auto';localStorage.setItem(TK,o[(o.indexOf(m)+1)%3]);applyTheme()}
 applyTheme();setInterval(applyTheme,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});
 
