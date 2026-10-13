@@ -90,7 +90,7 @@ body.light #pm{background:rgba(242,237,230,.9)!important}body.light #over{backgr
 .rhp{margin-top:8px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.rhp b{color:var(--teal);font-weight:500;font-size:12px}.rhp span{white-space:nowrap}
 body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 
-.vault{margin-top:12px}.vault .vh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.vault{margin:12px 0}.vault .vh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .vault .tier{color:var(--gold);font-size:11px;letter-spacing:.14em}
 .scene{display:block;width:100%;max-width:480px;margin:10px auto;image-rendering:pixelated;shape-rendering:crispEdges;border:2px solid var(--teal);box-shadow:0 0 8px var(--teal),inset 0 0 8px rgba(63,214,208,.35);border-radius:4px}
 .vs{display:flex;justify-content:space-around;text-align:center;margin:4px 0 8px}.vs b{color:var(--teal);font-size:16px}.vs span{display:block;font-size:9px;letter-spacing:.14em;color:var(--mut)}
@@ -120,6 +120,7 @@ body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 <div id="over"><h2 data-t="DEREZZED">DEREZZED</h2><p id="overtxt" style="font-size:18px"></p><button onclick="over.style.display='none'">CONTINUE</button></div>
 <div class="wrap">
 <span class="brand">AP'S CLUBHOUSE</span><h1>DEBT QUEST</h1><div class="sub" id="synced"></div>
+<div class="card vault" id="vault" style="display:none"></div>
 
 <div class="card"><div class="row">
 <div class="stat"><b id="tot">—</b><span>DEBT LEFT</span></div>
@@ -128,8 +129,6 @@ body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 <div class="bar" style="margin-top:10px"><i id="totbar"></i></div></div>
 
 <div class="bosses" id="bosses"></div>
-
-<div class="card vault" id="vault" style="display:none"></div>
 
 <div class="row" style="justify-content:center;margin-top:12px">
 <button class="s" onclick="syncState='';autoSync()">SYNC</button>
