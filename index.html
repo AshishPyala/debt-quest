@@ -155,7 +155,7 @@ body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 <div class="bosses" id="bosses"></div>
 
 <div class="row" style="justify-content:center;margin-top:12px">
-<button class="s" onclick="syncState='';autoSync()">SYNC</button>
+<button class="s" onclick="autoSync(true)">SYNC</button>
 <button class="s" onclick="lockNow()">LOCK</button></div>
 </div>
 <script>
@@ -299,15 +299,17 @@ let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hid
 let syncState='';
 function hitFx(id,a){const el=$('b_'+id);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');const dm=document.createElement('div');dm.className='dmg';dm.textContent='-$'+Math.round(a).toLocaleString();el.appendChild(dm)}
 function showSynced(){$('synced').textContent=syncState||(S.lastSyncAsOf?'Last synced '+new Date(S.lastSyncAsOf.length<=10?S.lastSyncAsOf+'T12:00':S.lastSyncAsOf).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'')}
-async function fetchBalances(){const r=await fetch('data/balances.enc.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)return null;const e=await r.json();
+async function fetchBalances(){const r=await fetch('data/balances.enc.json?ts='+Date.now()+'&r='+Math.random().toString(36).slice(2),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});if(!r.ok)return null;const e=await r.json();
  let k=await kGet();if(k&&k.salt===e.salt){try{return await dec(k.key,e)}catch(x){await kPut(null)}}
  let err='';for(let i=0;i<5;i++){const p=await askPass(err);if(!p){syncState='Locked';showSynced();return null}
   syncState='DECRYPTING…';showSynced();const key=await deriveKey(p,e.salt);
   try{const j=await dec(key,e);await kPut({key,salt:e.salt});syncState='';return j}catch(x){err='That passcode didn\'t unlock it. Try again.';syncState=''}}
  return null}
-let syncing=false;async function autoSync(){if(syncing||!navigator.onLine)return;syncing=true;
- try{const j=await fetchBalances();if(!j)return;
-  if(!j.as_of||(S.unlocked&&S.lastSyncAsOf&&j.as_of<=S.lastSyncAsOf)){showSynced();return}
+let syncing=false;let fbT=0;function flash(m,ms){syncState=m;showSynced();clearTimeout(fbT);if(ms)fbT=setTimeout(()=>{syncState='';showSynced()},ms)}
+async function autoSync(manual){if(syncing){if(manual)flash('Syncing…');return}if(!navigator.onLine){if(manual)flash('Offline — can\'t sync',4000);return}syncing=true;
+ if(manual)flash('Syncing…');
+ try{const j=await fetchBalances();if(!j){if(manual&&syncState==='Syncing…')flash('Sync failed — try again',4000);return}
+  if(!j.as_of||(S.unlocked&&S.lastSyncAsOf&&j.as_of<=S.lastSyncAsOf)){if(manual)flash('Synced just now',3000);else showSynced();return}
   const first=!S.lastSyncAsOf||!S.unlocked,hits=[],kills=[];
   const st=j.start||{},mt=j.meta||{};if(j.start_date)S.startDate=j.start_date;if(j.eta_rate)S.etaRate=j.eta_rate;
   for(const[k,id]of Object.entries(MAP)){const x=S.debts.find(d=>d.id==id);if(st[k]!=null)x.s=+st[k];if(mt[k]){x.apr=mt[k].apr||''}x.aprn=(j.apr_num||{})[k]??null;x.promo=(j.promo_end||{})[k]||null;x.prev=(j.previous||{})[k]??null}
@@ -317,8 +319,9 @@ let syncing=false;async function autoSync(){if(syncing||!navigator.onLine)return
    if(!first&&nb<was){const dmg=+(was-nb).toFixed(2);hits.push([id,dmg]);if(nb<=0&&was>0)kills.push(x)}
    x.b=nb;if(nb>x.s)x.s=nb}
   S.rhPort=j.robinhood_portfolio??null;S.rhBP=j.robinhood_buying_power??null;S.lastSyncAsOf=j.as_of;save();render();showSynced();
-  afterSync();
- }catch(e){console.warn('sync failed',e)}finally{syncing=false}}
-showSynced();autoSync();addEventListener('online',autoSync);document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoSync()});
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js'));
+  afterSync();if(manual)flash('Synced just now',3000);
+ }catch(e){console.warn('sync failed',e);if(manual)flash('Sync failed — try again',4000)}finally{syncing=false}}
+showSynced();autoSync();addEventListener('online',()=>{if(S.unlocked&&memKey)autoSync()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.unlocked&&memKey)autoSync()});
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
+ addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})}))}
 </script></body></html>
