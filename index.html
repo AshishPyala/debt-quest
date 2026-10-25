@@ -109,6 +109,7 @@ body.light .mon{filter:drop-shadow(0 0 3px var(--teal))}
 .thumbs{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;border:1px solid rgba(63,214,208,.35)}
 .thumbs img.locked{filter:blur(2px) brightness(.25) grayscale(1)}.thumbs img.cur{border-color:var(--gold);box-shadow:0 0 6px var(--gold)}
 .vrh{margin-top:10px;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--mut)}.vrh b{color:var(--teal);font-weight:500;font-size:12px}
+.vfunds{display:flex;gap:8px;margin-top:10px}.vfunds .vrh{flex:1;margin-top:0;padding:6px 4px;border:1px solid rgba(63,214,208,.35);border-radius:4px}.vfunds .vrh b{display:block;margin-top:2px}.vfunds .vrh small{display:block;font-size:9px;letter-spacing:.08em;margin-top:2px}.vfunds .vrh i{font-style:normal;opacity:.7}
 body.light .hero-card{box-shadow:0 0 6px var(--teal)}
 
 .grem{font-size:10px;color:var(--rust);letter-spacing:.04em;margin:2px 0}.grem.z{color:var(--mut)}.grem i,.vnext i{opacity:.6;font-size:9px}
@@ -198,7 +199,8 @@ const LOOKS=[[0,'STRANDED',''],[10,'SCRAPPER','scrap hoverboard + bow-tie rat'],
 function renderVault(fakePct){const el=$('vault');if(!S.unlocked){el.style.display='none';return}
  const ts=totS(),tb=totB(),pct=fakePct!=null?fakePct:(ts>0?Math.max(0,Math.min(100,(ts-tb)/ts*100)):0);
  const L=LOOKS.filter(l=>pct>=l[0]).length-1,lk=LOOKS[L],ln=LOOKS[L+1],lp=ln?Math.min(100,(pct-lk[0])/(ln[0]-lk[0])*100):100;
- const rh=S.rhPort!=null?`<div class="vrh">ROBINHOOD <b>${f(S.rhPort)}</b>${S.rhBP!=null?` · BUYING POWER <b>${f(S.rhBP)}</b>`:''}</div>`:'';
+ const xd=S.xAsOf?new Date(S.xAsOf).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+ const rh=`<div class="vfunds"><div class="vrh">ROBINHOOD ${S.rhPort!=null?`<b>${f(S.rhPort)}</b>${S.rhBP!=null?`<small>BUYING POWER ${f(S.rhBP)}</small>`:''}`:'<b><i>not synced yet</i></b>'}</div><div class="vrh">X MONEY ${S.xMoney!=null?`<b>${f(S.xMoney)}</b>${xd?`<small>as of ${xd}</small>`:''}`:'<b><i>not synced yet</i></b>'}</div></div>`;
  el.style.display='';el.innerHTML=`<div class="vh"><b>THE VAULT</b></div>
  <div class="hero-card" id="heroCard"><img src="art/tier${L+1}.webp" alt="A.P. — ${lk[1]}" width="1024" height="576"></div>
  ${petHTML(L)}<div class="vcap">TIER ${L+1} · ${lk[1]} · ${pct.toFixed(pct<10?1:0)}% paid</div>
@@ -318,7 +320,7 @@ async function autoSync(manual){if(syncing){if(manual)flash('Syncing…');return
   for(const[k,id]of Object.entries(MAP)){if(j[k]==null)continue;const x=S.debts.find(d=>d.id==id),nb=+(+j[k]).toFixed(2),was=x.b;
    if(!first&&nb<was){const dmg=+(was-nb).toFixed(2);hits.push([id,dmg]);if(nb<=0&&was>0)kills.push(x)}
    x.b=nb;if(nb>x.s)x.s=nb}
-  S.rhPort=j.robinhood_portfolio??null;S.rhBP=j.robinhood_buying_power??null;S.lastSyncAsOf=j.as_of;save();render();showSynced();
+  S.rhPort=j.robinhood_portfolio??null;S.rhBP=j.robinhood_buying_power??null;S.xMoney=j.x_money_balance??null;S.xAsOf=j.x_money_as_of||null;S.lastSyncAsOf=j.as_of;save();render();showSynced();
   afterSync();if(manual)flash('Synced just now',3000);
  }catch(e){console.warn('sync failed',e);if(manual)flash('Sync failed — try again',4000)}finally{syncing=false}}
 showSynced();autoSync();addEventListener('online',()=>{if(S.unlocked&&memKey)autoSync()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.unlocked&&memKey)autoSync()});
