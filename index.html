@@ -311,7 +311,7 @@ let syncing=false;let fbT=0;function flash(m,ms){syncState=m;showSynced();clearT
 async function autoSync(manual){if(syncing){if(manual)flash('Syncing…');return}if(!navigator.onLine){if(manual)flash('Offline — can\'t sync',4000);return}syncing=true;
  if(manual)flash('Syncing…');
  try{const j=await fetchBalances();if(!j){if(manual&&syncState==='Syncing…')flash('Sync failed — try again',4000);return}
-  if(!j.as_of||(S.unlocked&&S.lastSyncAsOf&&j.as_of<=S.lastSyncAsOf)){if(manual)flash('Synced just now',3000);else showSynced();return}
+  if(!j.as_of||(S.unlocked&&S.lastSyncAsOf&&Date.parse(j.as_of)<=Date.parse(S.lastSyncAsOf))){if(manual)flash('Synced just now',3000);else showSynced();return}
   const first=!S.lastSyncAsOf||!S.unlocked,hits=[],kills=[];
   const st=j.start||{},mt=j.meta||{};if(j.start_date)S.startDate=j.start_date;if(j.eta_rate)S.etaRate=j.eta_rate;
   for(const[k,id]of Object.entries(MAP)){const x=S.debts.find(d=>d.id==id);if(st[k]!=null)x.s=+st[k];if(mt[k]){x.apr=mt[k].apr||''}x.aprn=(j.apr_num||{})[k]??null;x.promo=(j.promo_end||{})[k]||null;x.prev=(j.previous||{})[k]??null}
